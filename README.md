@@ -35,10 +35,15 @@ A full-stack AI-powered system to manage hospital patients, bed allocation, bill
 ### 🛏 Beds
 ![Beds](screenshots/beds.png)
 
+
 ### 🧠 AI Prediction
 ![Prediction](screenshots/prediction.png)## 📸 Screenshots
 
 
+=======
+
+### 🧠 AI Prediction
+![Prediction](screenshots/prediction.png)
 
 
 ## ⚙️ Run Project
