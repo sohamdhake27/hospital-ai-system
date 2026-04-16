@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api" // ✅ FIXED
+  baseURL: "https://hospital-ai-system-3uda.onrender.com",
 });
 
 API.interceptors.request.use((req) => {
