@@ -1,6 +1,6 @@
 export const predictRisk = async (data) => {
   try {
-    const response = await fetch("http://localhost:5000/api/ai/predict", {
+    const response = await fetch("https://hospital-ai-system-3uda.onrender.com/api/ai/predict",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
