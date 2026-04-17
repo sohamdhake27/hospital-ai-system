@@ -2,6 +2,10 @@ const Patient = require("../models/Patient");
 const Bed = require("../models/Bed");
 const seedBeds = require("../services/seedBeds");
 
+const emitBedUpdate = (req) => {
+  req.app.get("io")?.emit("bedUpdated");
+};
+
 const assignBedToPatient = async (req, res) => {
   try {
     await seedBeds();
@@ -34,6 +38,8 @@ const assignBedToPatient = async (req, res) => {
     await patient.save();
 
     const updatedBed = await Bed.findById(bedId).populate("patient", "name disease status");
+
+    emitBedUpdate(req);
 
     res.json({
       message: "Patient assigned to bed successfully",

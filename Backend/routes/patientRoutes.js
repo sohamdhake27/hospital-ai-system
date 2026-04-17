@@ -39,6 +39,8 @@ router.delete('/:id', async (req, res) => {
 
     await Patient.findByIdAndDelete(req.params.id);
 
+    req.app.get("io")?.emit("bedUpdated");
+
     res.json({ message: "Patient deleted successfully" });
 
   } catch (error) {

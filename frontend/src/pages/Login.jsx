@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import API from "../api/api";
 
 function Login() {
@@ -15,9 +16,11 @@ function Login() {
       });
 
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      toast.success("Login successful");
       window.location.href = "/dashboard";
     } catch {
-      alert("Login failed");
+      toast.error("Login failed");
     } finally {
       setLoading(false);
     }

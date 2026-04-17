@@ -1,5 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
+import { io } from "socket.io-client";
 import API from "../api/api";
+
+const SOCKET_URL = "https://hospital-ai-system-3uda.onrender.com";
 
 function Beds() {
   const [beds, setBeds] = useState([]);
@@ -23,6 +26,16 @@ function Beds() {
 
   useEffect(() => {
     fetchBeds();
+  }, [fetchBeds]);
+
+  useEffect(() => {
+    const socket = io(SOCKET_URL, {
+      transports: ["websocket", "polling"]
+    });
+
+    socket.on("bedUpdated", fetchBeds);
+
+    return () => socket.disconnect();
   }, [fetchBeds]);
 
   const assignPatient = async (bedId) => {

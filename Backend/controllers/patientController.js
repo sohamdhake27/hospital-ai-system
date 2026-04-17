@@ -9,6 +9,10 @@ const getRecommendation = (risk) => {
   return "Normal Care";
 };
 
+const emitBedUpdate = (req) => {
+  req.app.get("io")?.emit("bedUpdated");
+};
+
 // ============================================
 // 🔥 CREATE PATIENT
 // ============================================
@@ -104,6 +108,7 @@ const createPatient = async (req, res) => {
       }
     }
 
+    emitBedUpdate(req);
     res.json(patient);
 
   } catch (error) {
@@ -195,6 +200,7 @@ async function dischargePatient(req, res) {
       }
     }
 
+    emitBedUpdate(req);
     res.json({ message: "Patient discharged & bed reallocated" });
 
   } catch (error) {

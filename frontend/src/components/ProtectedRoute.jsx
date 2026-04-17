@@ -12,6 +12,9 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
   let decoded;
   try {
     decoded = jwtDecode(token);
+    if (!localStorage.getItem("user")) {
+      localStorage.setItem("user", JSON.stringify({ role: decoded.role }));
+    }
   } catch (error) {
     console.error("Invalid token:", error);
     // ❌ Invalid token → clear & redirect

@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -13,7 +14,9 @@ import RiskPredictor from "./components/RiskPredictor";
 
 function App() {
   return (
-    <Routes>
+    <>
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+      <Routes>
 
       {/* Login */}
       <Route path="/" element={<Login />} />
@@ -80,7 +83,8 @@ function App() {
       {/* Risk Predictor */}
       <Route path="/predict" element={<RiskPredictor />} />
 
-    </Routes>
+      </Routes>
+    </>
   );
 }
 

@@ -1,8 +1,19 @@
 import { NavLink } from "react-router-dom";
 
 function Layout({ children }) {
+  const getUser = () => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  };
+
+  const user = getUser();
+
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     window.location.href = "/";
   };
 
@@ -36,6 +47,11 @@ function Layout({ children }) {
                 <p className="mt-3 text-sm leading-6 text-slate-300">
                   Admissions, bed allocation, and AI-assisted risk tracking from one control center.
                 </p>
+                {user?.role && (
+                  <div className="mt-4 rounded-2xl bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white">
+                    {user.role} access
+                  </div>
+                )}
               </div>
 
               <nav className="mt-8 space-y-2">
