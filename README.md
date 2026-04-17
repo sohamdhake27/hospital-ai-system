@@ -19,8 +19,6 @@ A full-stack AI-powered system to manage hospital patients, bed allocation, bill
 * Database: MongoDB
 * AI: Python
 
-## 📸 Screenshots## 
-
 ## 📸 Screenshots
 
 ### 🏠 Dashboard
