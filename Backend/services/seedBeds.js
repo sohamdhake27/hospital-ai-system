@@ -1,13 +1,6 @@
 const Bed = require("../models/Bed");
 
 const seedBeds = async () => {
-  const existingBeds = await Bed.countDocuments();
-
-  if (existingBeds > 0) {
-    console.log("Beds already seeded");
-    return;
-  }
-
   const beds = [];
 
   for (let i = 1; i <= 50; i++) {
@@ -37,8 +30,18 @@ const seedBeds = async () => {
     });
   }
 
-  await Bed.insertMany(beds);
-  console.log("85 beds created successfully");
+  await Promise.all(
+    beds.map((bed) =>
+      Bed.updateOne(
+        { bedNumber: bed.bedNumber },
+        { $setOnInsert: bed },
+        { upsert: true }
+      )
+    )
+  );
+
+  const totalBeds = await Bed.countDocuments();
+  console.log(`Bed seed complete. ${totalBeds} beds available.`);
 };
 
 module.exports = seedBeds;

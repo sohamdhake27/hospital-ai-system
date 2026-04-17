@@ -1,8 +1,11 @@
 const Patient = require("../models/Patient");
 const Bed = require("../models/Bed");
+const seedBeds = require("../services/seedBeds");
 
 const assignBedToPatient = async (req, res) => {
   try {
+    await seedBeds();
+
     const { bedId } = req.body;
 
     // 🔥 Find one waiting patient

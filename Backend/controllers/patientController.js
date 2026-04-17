@@ -1,6 +1,7 @@
 const Patient = require("../models/Patient");
 const Bed = require("../models/Bed");
 const axios = require("axios");
+const seedBeds = require("../services/seedBeds");
 
 const getRecommendation = (risk) => {
   if (risk === "High") return "ICU Required";
@@ -13,6 +14,8 @@ const getRecommendation = (risk) => {
 // ============================================
 const createPatient = async (req, res) => {
   try {
+    await seedBeds();
+
     let { name, age, disease, department, status } = req.body;
 
     // ============================================
@@ -202,6 +205,8 @@ async function dischargePatient(req, res) {
 
 const getBedStats = async (req, res) => {
   try {
+    await seedBeds();
+
     const beds = await Bed.find();
 
     const totalBeds = beds.length;

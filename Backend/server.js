@@ -4,6 +4,7 @@ const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const authRoutes = require("./routes/authRoutes");
+const seedBeds = require("./services/seedBeds");
 require("dotenv").config();
 
 const app = express();
@@ -58,8 +59,9 @@ app.use("/auth", authRoutes);
 // ✅ DATABASE CONNECTION
 // ========================================
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
+  .then(async () => {
     console.log("MongoDB Atlas Connected ✅");
+    await seedBeds();
   })
   .catch((err) => {
     console.error("MongoDB Error ❌:", err);
