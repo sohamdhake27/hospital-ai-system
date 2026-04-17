@@ -15,6 +15,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    service: "hospital-ai-system",
+    api: "/api"
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 // ========================================
 // ✅ CREATE SERVER + SOCKET.IO
 // ========================================
@@ -70,8 +82,9 @@ mongoose.connect(process.env.MONGO_URI)
 // ========================================
 // ✅ START SERVER (IMPORTANT)
 // ========================================
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
+const HOST = "0.0.0.0";
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   console.log(`Server running on port ${PORT} 🚀`);
 });
