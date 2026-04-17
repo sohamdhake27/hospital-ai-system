@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import API from "../api/api";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -9,7 +9,7 @@ function Login() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const res = await axios.post("https://hospital-ai-system-3uda.onrender.com/api/auth/login", {
+      const res = await API.post("/auth/login", {
         email,
         password
       });

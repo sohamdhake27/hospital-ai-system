@@ -1,7 +1,14 @@
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: "https://hospital-ai-system-3uda.onrender.com",
+const DEFAULT_API_URL = "https://hospital-ai-system-3uda.onrender.com/api";
+
+const normalizeApiUrl = (url) => {
+  const trimmedUrl = (url || DEFAULT_API_URL).replace(/\/+$/, "");
+  return trimmedUrl.endsWith("/api") ? trimmedUrl : `${trimmedUrl}/api`;
+};
+
+export const API = axios.create({
+  baseURL: normalizeApiUrl(import.meta.env.VITE_API_URL)
 });
 
 API.interceptors.request.use((req) => {
