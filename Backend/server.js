@@ -51,9 +51,9 @@ app.use("/api/auth", authRoutes);
 // ========================================
 // ✅ DATABASE CONNECTION
 // ========================================
-mongoose.connect("mongodb://127.0.0.1:27017/hospitalDB")
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
-    console.log("MongoDB Connected ✅");
+    console.log("MongoDB Atlas Connected ✅");
   })
   .catch((err) => {
     console.error("MongoDB Error ❌:", err);
