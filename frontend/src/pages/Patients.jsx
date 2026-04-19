@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../api/api";
 
@@ -17,7 +17,7 @@ function Patients() {
 
   const token = localStorage.getItem("token");
 
-  const fetchPatients = useCallback(async () => {
+  const fetchPatients = async () => {
     try {
       const res = await API.get("/patients", {
         headers: { Authorization: `Bearer ${token}` }
@@ -26,11 +26,31 @@ function Patients() {
     } catch (err) {
       console.log(err);
     }
-  }, [token]);
+  };
 
   useEffect(() => {
-    fetchPatients();
-  }, [fetchPatients]);
+    let isMounted = true;
+
+    const loadPatients = async () => {
+      try {
+        const res = await API.get("/patients", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (isMounted) {
+          setPatients(res.data);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    loadPatients();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
 
   const handleAdd = async () => {
     try {

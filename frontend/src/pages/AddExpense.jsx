@@ -160,7 +160,7 @@ function AddExpense() {
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Total Bill</p>
-            <p className="mt-2 text-2xl font-bold text-blue-700">{formatCurrency(bill.total)}</p>
+            <p className="mt-2 text-2xl font-bold text-blue-700">{formatCurrency(bill.summary.total)}</p>
           </div>
         </div>
       </section>
@@ -242,7 +242,7 @@ function AddExpense() {
             <h3 className="text-lg font-semibold text-slate-950">Patient expenses</h3>
             <p className="mt-1 text-sm text-slate-500">Medications, tests, surgery, emergency, and extra charges.</p>
           </div>
-          <p className="text-lg font-bold text-slate-950">{formatCurrency(bill.manualTotal)}</p>
+          <p className="text-lg font-bold text-slate-950">{formatCurrency(bill.summary.manualTotal)}</p>
         </div>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
@@ -286,11 +286,12 @@ function AddExpense() {
       <section className="panel p-6">
         <h3 className="text-lg font-semibold text-slate-950">Bill summary</h3>
         <div className="mt-4 space-y-3">
-          <ChargeRow label="Automatic Charges" amount={bill.automaticTotal} />
-          <ChargeRow label="Manual Patient Expenses" amount={bill.manualTotal} />
+          <ChargeRow label="Automatic Charges" amount={bill.summary.automaticTotal} />
+          <ChargeRow label="Manual Patient Expenses" amount={bill.summary.manualTotal} />
+          <ChargeRow label={`GST (${Math.round(bill.summary.gstRate * 100)}%)`} amount={bill.summary.gstAmount} />
           <div className="flex items-center justify-between border-t border-slate-200 pt-4">
             <p className="text-xl font-bold text-slate-950">Final Total</p>
-            <p className="text-2xl font-bold text-blue-700">{formatCurrency(bill.total)}</p>
+            <p className="text-2xl font-bold text-blue-700">{formatCurrency(bill.summary.total)}</p>
           </div>
         </div>
       </section>

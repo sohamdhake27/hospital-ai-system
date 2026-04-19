@@ -80,7 +80,14 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="/bill/:id" element={<Bill />} />
+      <Route
+        path="/bill/:id"
+        element={
+          <ProtectedRoute>
+            <Bill />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Risk Predictor */}
       <Route path="/predict" element={<RiskPredictor />} />

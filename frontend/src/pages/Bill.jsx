@@ -1,101 +1,205 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import API from "../api/api";
 
-const Bill = () => {
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2
+  }).format(Number(value || 0));
+
+const formatDate = (value) => {
+  if (!value) return "-";
+
+  return new Date(value).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+};
+
+function Bill() {
   const { id } = useParams();
   const [bill, setBill] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchBill = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/patients/bill/${id}`);
-        setBill(res.data);
+        const res = await API.get(`/patients/bill/${id}`);
+
+        if (isMounted) {
+          setBill(res.data);
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch bill:", err);
+        if (isMounted) {
+          setBill(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchBill();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
+  const downloadPDF = async () => {
+    const input = document.getElementById("invoice");
 
-const downloadPDF = async () => {
-  const input = document.getElementById("invoice");
+    if (!input) return;
 
-  const canvas = await html2canvas(input);
-  const imgData = canvas.toDataURL("image/png");
+    try {
+      setDownloading(true);
 
-  const pdf = new jsPDF();
-  pdf.addImage(imgData, "PNG", 0, 0, 210, 297);
+      const canvas = await html2canvas(input, {
+        scale: 2,
+        useCORS: true
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-  pdf.save("hospital-bill.pdf");
-};
-  if (!bill) return <p className="text-center mt-10">Loading...</p>;
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`hospital-bill-${id}.pdf`);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  if (loading) {
+    return <p className="px-6 py-10 text-center text-sm text-slate-500">Loading invoice...</p>;
+  }
+
+  if (!bill) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10">
+        <div className="panel p-6 text-center">
+          <h2 className="text-2xl font-semibold text-slate-950">Bill not found</h2>
+          <Link to="/patients" className="mt-4 inline-flex text-sm font-semibold text-blue-600">
+            Back to patients
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const { patient, automaticCharges, manualTotals, summary, days } = bill;
 
   return (
-    <div id="invoice" className="bg-white p-6 rounded shadow max-w-2xl mx-auto mt-10">
-
-      <h1 className="text-2xl font-bold text-center">
-  🏥 Soham Hospital AI
-</h1>
-
-<p className="text-center text-sm text-gray-500">
-  Nashik, Maharashtra | GSTIN: 27ABCDE1234F1Z5
-</p>
-
-<h2 className="text-xl font-semibold text-center mt-2 mb-4">
-  Patient Invoice
-</h2>
-
-      <p><b>Patient:</b> {bill.patient.name}</p>
-      <p><b>Days:</b> {bill.days}</p>
-
-      <hr className="my-4" />
-
-      <div className="space-y-1">
-
-        <p>Room Rent: ₹{bill.automaticCharges.roomRent}</p>
-        <p>Doctor Fee: ₹{bill.automaticCharges.doctorFee}</p>
-        <p>Nursing Care: ₹{bill.automaticCharges.nursingCare}</p>
-        <p>ICU Charges: ₹{bill.automaticCharges.icuFee}</p>
-
-        <hr />
-
-        <p>Medications: ₹{bill.manualTotals.medications}</p>
-        <p>Tests: ₹{bill.manualTotals.tests}</p>
-        <p>Surgery: ₹{bill.manualTotals.surgeries}</p>
-        <p>Emergency: ₹{bill.manualTotals.emergency}</p>
-        <p>Other: ₹{bill.manualTotals.other}</p>
-
-        <hr />
-
-        <p><b>Subtotal:</b> ₹{bill.summary.subtotal}</p>
-        <p><b>GST (18%):</b> ₹{bill.summary.gstAmount}</p>
-
-        <h2 className="text-xl font-bold">
-          Total: ₹{bill.summary.total}
-        </h2>
-
+    <div className="mx-auto max-w-4xl px-4 py-6">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
+        <Link to={`/patients/bill/${id}`} className="btn-secondary">
+          Back to bill editor
+        </Link>
+        <div className="flex flex-wrap gap-3">
+          <button onClick={downloadPDF} disabled={downloading} className="btn-primary">
+            {downloading ? "Preparing PDF..." : "Download PDF"}
+          </button>
+          <button onClick={() => window.print()} className="btn-secondary">
+            Print
+          </button>
+        </div>
       </div>
-      <button
-  onClick={downloadPDF}
-  className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
->
-  Download PDF
-</button>
 
-<button
-  onClick={() => window.print()}
-  className="mt-2 bg-green-600 text-white px-4 py-2 rounded ml-2"
->
-  Print
-</button>
+      <div id="invoice" className="panel overflow-hidden bg-white p-8 shadow-xl print:shadow-none">
+        <div className="border-b border-slate-200 pb-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-600">Soham Hospital AI</p>
+              <h1 className="mt-3 text-3xl font-semibold text-slate-950">Patient Invoice</h1>
+              <p className="mt-2 text-sm text-slate-500">Nashik, Maharashtra | GSTIN: 27ABCDE1234F1Z5</p>
+            </div>
 
+            <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              <p>
+                <span className="font-semibold text-slate-950">Patient:</span> {patient.name}
+              </p>
+              <p className="mt-1">
+                <span className="font-semibold text-slate-950">Department:</span> {patient.department}
+              </p>
+              <p className="mt-1">
+                <span className="font-semibold text-slate-950">Stay:</span> {days} day{days === 1 ? "" : "s"}
+              </p>
+              <p className="mt-1">
+                <span className="font-semibold text-slate-950">Admission:</span> {formatDate(patient.admissionDate)}
+              </p>
+              <p className="mt-1">
+                <span className="font-semibold text-slate-950">Discharge:</span> {formatDate(patient.dischargeDate)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-6 py-6 md:grid-cols-2">
+          <section>
+            <h2 className="text-lg font-semibold text-slate-950">Automatic charges</h2>
+            <div className="mt-4 space-y-3">
+              <ChargeRow label="Room rent" amount={automaticCharges.roomRent} />
+              <ChargeRow label="Doctor fee" amount={automaticCharges.doctorFee} />
+              <ChargeRow label="Nursing care" amount={automaticCharges.nursingCare} />
+              <ChargeRow label="ICU charges" amount={automaticCharges.icuFee} />
+              <ChargeRow label="Emergency charges" amount={automaticCharges.emergencyFee} />
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-slate-950">Manual charges</h2>
+            <div className="mt-4 space-y-3">
+              <ChargeRow label="Medications" amount={manualTotals.medications} />
+              <ChargeRow label="Tests" amount={manualTotals.tests} />
+              <ChargeRow label="Surgery" amount={manualTotals.surgeries} />
+              <ChargeRow label="Emergency" amount={manualTotals.emergency} />
+              <ChargeRow label="Other" amount={manualTotals.other} />
+            </div>
+          </section>
+        </div>
+
+        <div className="border-t border-slate-200 pt-6">
+          <div className="ml-auto max-w-md space-y-3">
+            <SummaryRow label="Automatic total" value={summary.automaticTotal} />
+            <SummaryRow label="Manual total" value={summary.manualTotal} />
+            <SummaryRow label={`GST (${Math.round(summary.gstRate * 100)}%)`} value={summary.gstAmount} />
+            <div className="flex items-center justify-between rounded-2xl bg-slate-950 px-4 py-4 text-white">
+              <span className="text-base font-semibold">Grand total</span>
+              <span className="text-2xl font-bold">{formatCurrency(summary.total)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
-};
+}
+
+function ChargeRow({ label, amount }) {
+  return (
+    <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+      <span>{label}</span>
+      <span className="font-semibold text-slate-950">{formatCurrency(amount)}</span>
+    </div>
+  );
+}
+
+function SummaryRow({ label, value }) {
+  return (
+    <div className="flex items-center justify-between text-sm text-slate-600">
+      <span>{label}</span>
+      <span className="font-semibold text-slate-950">{formatCurrency(value)}</span>
+    </div>
+  );
+}
 
 export default Bill;

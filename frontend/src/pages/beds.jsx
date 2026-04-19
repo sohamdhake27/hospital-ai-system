@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import API from "../api/api";
 
@@ -14,7 +14,7 @@ function Beds() {
     return Number.isNaN(numericPart) ? Number.MAX_SAFE_INTEGER : numericPart;
   };
 
-  const fetchBeds = useCallback(async () => {
+  const fetchBeds = async () => {
     try {
       const res = await API.get("/beds");
       setBeds(Array.isArray(res.data) ? res.data : []);
@@ -22,11 +22,32 @@ function Beds() {
       console.log("Error fetching beds:", error);
       setBeds([]);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    fetchBeds();
-  }, [fetchBeds]);
+    let isMounted = true;
+
+    const loadBeds = async () => {
+      try {
+        const res = await API.get("/beds");
+
+        if (isMounted) {
+          setBeds(Array.isArray(res.data) ? res.data : []);
+        }
+      } catch (error) {
+        console.log("Error fetching beds:", error);
+        if (isMounted) {
+          setBeds([]);
+        }
+      }
+    };
+
+    loadBeds();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const socket = io(SOCKET_URL, {
@@ -36,7 +57,7 @@ function Beds() {
     socket.on("bedUpdated", fetchBeds);
 
     return () => socket.disconnect();
-  }, [fetchBeds]);
+  }, []);
 
   const assignPatient = async (bedId) => {
     try {
