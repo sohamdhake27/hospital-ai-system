@@ -1,5 +1,6 @@
 const Patient = require("../models/Patient");
 const Bed = require("../models/Bed");
+const Medicine = require("../models/Medicine");
 const axios = require("axios");
 const seedBeds = require("../services/seedBeds");
 
@@ -306,6 +307,7 @@ const getBill = async (req, res) => {
     };
 
     const expenses = patient.expenses || [];
+    const medicines = patient.medicines || [];
 
     expenses.forEach((expense) => {
       const amount = Number(expense.amount) || 0;
@@ -316,6 +318,9 @@ const getBill = async (req, res) => {
       else if (expense.category === "emergency") manualTotals.emergency += amount;
       else manualTotals.other += amount;
     });
+
+    const medicineTotal = medicines.reduce((sum, medicine) => sum + (Number(medicine.total) || 0), 0);
+    manualTotals.medications += medicineTotal;
 
     const automaticTotal = Object.values(automaticCharges).reduce((sum, value) => sum + value, 0);
     const manualTotal = Object.values(manualTotals).reduce((sum, value) => sum + value, 0);
@@ -337,6 +342,7 @@ const getBill = async (req, res) => {
       automaticCharges,
       manualTotals,
       expenses,
+      medicines,
       summary: {
         automaticTotal,
         manualTotal,
@@ -382,6 +388,211 @@ const addExpense = async (req, res) => {
   }
 };
 
+const addCaseStudy = async (req, res) => {
+  try {
+    const { notes, doctor } = req.body;
+
+    if (!notes?.trim()) {
+      return res.status(400).json({ message: "Case study notes are required" });
+    }
+
+    const patient = await Patient.findById(req.params.id);
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    patient.caseStudies.push({
+      notes: notes.trim(),
+      doctor: doctor?.trim() || req.user?.role || "Doctor"
+    });
+
+    await patient.save();
+
+    res.json({
+      message: "Case study added",
+      caseStudies: patient.caseStudies
+    });
+  } catch (error) {
+    console.log("ADD CASE STUDY ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const addMedicine = async (req, res) => {
+  try {
+    const { medicineId, quantity, addedBy } = req.body;
+    const parsedQuantity = Number(quantity);
+
+    if (!medicineId || !Number.isFinite(parsedQuantity) || parsedQuantity <= 0) {
+      return res.status(400).json({ message: "Valid medicine selection and quantity are required" });
+    }
+
+    const [patient, medicineStock] = await Promise.all([
+      Patient.findById(req.params.id),
+      Medicine.findById(medicineId)
+    ]);
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    if (!medicineStock) {
+      return res.status(404).json({ message: "Medicine stock item not found" });
+    }
+
+    if (medicineStock.stock < parsedQuantity) {
+      return res.status(400).json({ message: "Insufficient stock available" });
+    }
+
+    const sellingPrice = Number(medicineStock.sellingPrice) || 0;
+    const purchasePrice = Number(medicineStock.purchasePrice) || 0;
+    const total = parsedQuantity * sellingPrice;
+    const profit = parsedQuantity * Math.max(0, sellingPrice - purchasePrice);
+
+    medicineStock.stock -= parsedQuantity;
+
+    patient.medicines.push({
+      medicineId: medicineStock._id,
+      name: medicineStock.name,
+      quantity: parsedQuantity,
+      price: sellingPrice,
+      total,
+      profit,
+      addedBy: addedBy?.trim() || req.user?.role || "Pharmacy"
+    });
+
+    await Promise.all([medicineStock.save(), patient.save()]);
+
+    res.json({
+      message: "Medicine added",
+      medicines: patient.medicines
+    });
+  } catch (error) {
+    console.log("ADD MEDICINE ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updateMedicine = async (req, res) => {
+  try {
+    const { medicineId, quantity, addedBy } = req.body;
+    const parsedQuantity = Number(quantity);
+
+    if (!medicineId || !Number.isFinite(parsedQuantity) || parsedQuantity <= 0) {
+      return res.status(400).json({ message: "Valid medicine selection and quantity are required" });
+    }
+
+    const patient = await Patient.findById(req.params.id);
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    const medicine = patient.medicines.id(req.params.medicineId);
+
+    if (!medicine) {
+      return res.status(404).json({ message: "Medicine entry not found" });
+    }
+
+    const previousMedicineId = medicine.medicineId ? String(medicine.medicineId) : null;
+    const nextMedicineId = String(medicineId);
+    const previousQuantity = Number(medicine.quantity) || 0;
+
+    const [previousStockMedicine, nextStockMedicine] = await Promise.all([
+      previousMedicineId ? Medicine.findById(previousMedicineId) : Promise.resolve(null),
+      Medicine.findById(nextMedicineId)
+    ]);
+
+    if (!nextStockMedicine) {
+      return res.status(404).json({ message: "Medicine stock item not found" });
+    }
+
+    if (previousMedicineId && previousMedicineId === nextMedicineId) {
+      const quantityDelta = parsedQuantity - previousQuantity;
+
+      if (quantityDelta > 0 && nextStockMedicine.stock < quantityDelta) {
+        return res.status(400).json({ message: "Insufficient stock available for update" });
+      }
+
+      nextStockMedicine.stock -= quantityDelta;
+      await nextStockMedicine.save();
+    } else {
+      if (nextStockMedicine.stock < parsedQuantity) {
+        return res.status(400).json({ message: "Insufficient stock available for update" });
+      }
+
+      if (previousStockMedicine) {
+        previousStockMedicine.stock += previousQuantity;
+      }
+
+      nextStockMedicine.stock -= parsedQuantity;
+
+      await Promise.all([
+        previousStockMedicine ? previousStockMedicine.save() : Promise.resolve(),
+        nextStockMedicine.save()
+      ]);
+    }
+
+    const sellingPrice = Number(nextStockMedicine.sellingPrice) || 0;
+    const purchasePrice = Number(nextStockMedicine.purchasePrice) || 0;
+
+    medicine.medicineId = nextStockMedicine._id;
+    medicine.name = nextStockMedicine.name;
+    medicine.quantity = parsedQuantity;
+    medicine.price = sellingPrice;
+    medicine.total = parsedQuantity * sellingPrice;
+    medicine.profit = parsedQuantity * Math.max(0, sellingPrice - purchasePrice);
+    medicine.addedBy = addedBy?.trim() || medicine.addedBy || req.user?.role || "Pharmacy";
+
+    await patient.save();
+
+    res.json({
+      message: "Medicine updated",
+      medicines: patient.medicines
+    });
+  } catch (error) {
+    console.log("UPDATE MEDICINE ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteMedicine = async (req, res) => {
+  try {
+    const patient = await Patient.findById(req.params.id);
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    const medicine = patient.medicines.id(req.params.medicineId);
+
+    if (!medicine) {
+      return res.status(404).json({ message: "Medicine entry not found" });
+    }
+
+    if (medicine.medicineId) {
+      const stockMedicine = await Medicine.findById(medicine.medicineId);
+
+      if (stockMedicine) {
+        stockMedicine.stock += Number(medicine.quantity) || 0;
+        await stockMedicine.save();
+      }
+    }
+
+    medicine.deleteOne();
+    await patient.save();
+
+    res.json({
+      message: "Medicine deleted",
+      medicines: patient.medicines
+    });
+  } catch (error) {
+    console.log("DELETE MEDICINE ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // ============================================
 // EXPORTS
 // ============================================
@@ -391,5 +602,9 @@ module.exports = {
   dischargePatient,
   getBedStats,
   getBill,
-  addExpense
+  addExpense,
+  addCaseStudy,
+  addMedicine,
+  updateMedicine,
+  deleteMedicine
 };

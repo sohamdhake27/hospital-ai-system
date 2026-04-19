@@ -1,27 +1,35 @@
 import { NavLink } from "react-router-dom";
 
 function Layout({ children }) {
-  const getUser = () => {
-    try {
-      return JSON.parse(localStorage.getItem("user") || "null");
-    } catch {
-      return null;
-    }
-  };
-
-  const user = getUser();
+  const role = localStorage.getItem("role");
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("role");
     window.location.href = "/";
   };
 
   const navItems = [
-    { to: "/dashboard", label: "Dashboard" },
-    { to: "/patients", label: "Patients" },
-    { to: "/beds", label: "Beds" },
-    { to: "/ai", label: "AI Prediction" }
+    ...(role === "admin" || role === "doctor"
+      ? [{ to: "/dashboard", label: "Dashboard" }]
+      : []),
+    ...(role === "admin"
+      ? [{ to: "/admin", label: "Admin Analytics" }]
+      : []),
+    { to: "/patients", label: role === "pharmacy" ? "Patient Medicine Desk" : "Patients" },
+    ...(role === "admin" || role === "pharmacy"
+      ? [{ to: "/pharmacy", label: "Pharmacy" }]
+      : []),
+    ...(role === "admin" || role === "reception"
+      ? [{ to: "/billing", label: "Billing" }]
+      : []),
+    ...(role === "admin" || role === "doctor"
+      ? [{ to: "/beds", label: "Beds" }]
+      : []),
+    ...(role === "admin" || role === "doctor"
+      ? [{ to: "/ai", label: "AI Prediction" }]
+      : [])
   ];
 
   return (
@@ -41,15 +49,13 @@ function Layout({ children }) {
               </div>
 
               <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-200">
-                  Live System
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-200">Live System</p>
                 <p className="mt-3 text-sm leading-6 text-slate-300">
-                  Admissions, bed allocation, and AI-assisted risk tracking from one control center.
+                  Admissions, bed allocation, billing, and AI-assisted risk tracking from one control center.
                 </p>
-                {user?.role && (
+                {role && (
                   <div className="mt-4 rounded-2xl bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white">
-                    {user.role} access
+                    {role} access
                   </div>
                 )}
               </div>
@@ -88,12 +94,8 @@ function Layout({ children }) {
           <header className="border-b border-slate-200/70 bg-white/70 px-6 py-5 backdrop-blur">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
-                  Hospital AI System
-                </p>
-                <h1 className="mt-1 text-2xl font-semibold text-slate-950">
-                  Modern care operations dashboard
-                </h1>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Hospital AI System</p>
+                <h1 className="mt-1 text-2xl font-semibold text-slate-950">Role-based care operations dashboard</h1>
               </div>
               <div className="panel flex items-center gap-3 px-4 py-3">
                 <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />

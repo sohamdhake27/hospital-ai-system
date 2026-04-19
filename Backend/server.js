@@ -4,15 +4,28 @@ const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const authRoutes = require("./routes/authRoutes");
+const patientRoutes = require("./routes/patientRoutes");
+const bedRoutes = require("./routes/bedRoutes");
+const aiRoutes = require("./routes/aiRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const medicineRoutes = require("./routes/medicineRoutes");
 const seedBeds = require("./services/seedBeds");
+const { seedDefaultUser } = require("./services/seedDefaultUser");
+
 require("dotenv").config();
 
 const app = express();
+const server = http.createServer(app);
 
-// ========================================
-// ✅ MIDDLEWARE
-// ========================================
-app.use(cors());
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/hospitalDB";
+const PORT = Number(process.env.PORT) || 5050;
+const HOST = process.env.HOST || "0.0.0.0";
+
+app.use(cors({
+  origin: CLIENT_ORIGIN,
+  credentials: true
+}));
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -27,64 +40,44 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-// ========================================
-// ✅ CREATE SERVER + SOCKET.IO
-// ========================================
-const server = http.createServer(app);
-
 const io = new Server(server, {
   cors: {
-    origin: "*"
+    origin: CLIENT_ORIGIN,
+    credentials: true
   }
 });
 
-// 🔥 SOCKET CONNECTION
-io.on("connection", (socket) => {
-  console.log("User connected");
+io.on("connection", () => {
+  console.log("Socket client connected");
 });
 
-// Make io accessible in controllers
 app.set("io", io);
 
-// ========================================
-// ✅ ROUTES IMPORT
-// ========================================
-const patientRoutes = require("./routes/patientRoutes");
-const bedRoutes = require("./routes/bedRoutes");
-const aiRoutes = require("./routes/aiRoutes");
-
-// ========================================
-// ✅ ROUTES USE
-// ========================================
 app.use("/api/patients", patientRoutes);
 app.use("/api/beds", bedRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/medicines", medicineRoutes);
 
 // Backward-compatible aliases for older frontend bundles that call without /api.
 app.use("/patients", patientRoutes);
 app.use("/beds", bedRoutes);
 app.use("/ai", aiRoutes);
 app.use("/auth", authRoutes);
+app.use("/dashboard", dashboardRoutes);
+app.use("/medicines", medicineRoutes);
 
-// ========================================
-// ✅ DATABASE CONNECTION
-// ========================================
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(MONGO_URI)
   .then(async () => {
-    console.log("MongoDB Atlas Connected ✅");
+    console.log(`MongoDB connected: ${MONGO_URI}`);
     await seedBeds();
+    await seedDefaultUser();
   })
-  .catch((err) => {
-    console.error("MongoDB Error ❌:", err);
+  .catch((error) => {
+    console.error("MongoDB connection error:", error);
   });
 
-// ========================================
-// ✅ START SERVER (IMPORTANT)
-// ========================================
-const PORT = Number(process.env.PORT) || 5000;
-const HOST = "0.0.0.0";
-
 server.listen(PORT, HOST, () => {
-  console.log(`Server running on port ${PORT} 🚀`);
+  console.log(`Server running on http://${HOST === "0.0.0.0" ? "localhost" : HOST}:${PORT}`);
 });

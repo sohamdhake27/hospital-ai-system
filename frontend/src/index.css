@@ -62,11 +62,13 @@
     visibility: hidden;
   }
 
-  #invoice, #invoice * {
+  #invoice, #invoice *,
+  #prescription, #prescription * {
     visibility: visible;
   }
 
-  #invoice {
+  #invoice,
+  #prescription {
     position: absolute;
     left: 0;
     top: 0;

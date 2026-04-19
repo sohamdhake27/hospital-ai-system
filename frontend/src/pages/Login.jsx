@@ -3,8 +3,8 @@ import toast from "react-hot-toast";
 import API from "../api/api";
 
 function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("test123@gmail.com");
+  const [password, setPassword] = useState("123456");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -17,10 +17,16 @@ function Login() {
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("role", res.data.user.role);
       toast.success("Login successful");
-      window.location.href = "/dashboard";
-    } catch {
-      toast.error("Login failed");
+      window.location.href =
+        res.data.user.role === "reception"
+          ? "/billing"
+          : res.data.user.role === "pharmacy"
+            ? "/pharmacy"
+            : "/dashboard";
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -100,7 +106,11 @@ function Login() {
             </div>
 
             <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-              Secure access for hospital staff and operations teams.
+              <p className="font-semibold text-slate-800">Demo accounts</p>
+              <p className="mt-2">Admin: admin@test.com / 123456</p>
+              <p>Doctor: doctor@test.com / 123456</p>
+              <p>Reception: rec@test.com / 123456</p>
+              <p>Pharmacy: pharmacy@test.com / 123456</p>
             </div>
           </div>
         </div>

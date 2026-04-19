@@ -23,6 +23,8 @@ const formatDate = (value) => {
 
 function Bill() {
   const { id } = useParams();
+  const role = localStorage.getItem("role");
+  const backPath = role === "reception" ? "/billing" : "/patients";
   const [bill, setBill] = useState(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
@@ -89,7 +91,7 @@ function Bill() {
       <div className="mx-auto max-w-3xl px-4 py-10">
         <div className="panel p-6 text-center">
           <h2 className="text-2xl font-semibold text-slate-950">Bill not found</h2>
-          <Link to="/patients" className="mt-4 inline-flex text-sm font-semibold text-blue-600">
+          <Link to={backPath} className="mt-4 inline-flex text-sm font-semibold text-blue-600">
             Back to patients
           </Link>
         </div>
@@ -97,7 +99,7 @@ function Bill() {
     );
   }
 
-  const { patient, automaticCharges, manualTotals, summary, days } = bill;
+  const { patient, automaticCharges, manualTotals, summary, days, medicines = [] } = bill;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
@@ -166,6 +168,29 @@ function Bill() {
               <ChargeRow label="Other" amount={manualTotals.other} />
             </div>
           </section>
+        </div>
+
+        <div className="border-t border-slate-200 py-6">
+          <h2 className="text-lg font-semibold text-slate-950">Medicine details</h2>
+          <div className="mt-4 space-y-3">
+            {medicines.length > 0 ? (
+              [...medicines].reverse().map((medicine, index) => (
+                <div key={`${medicine.date}-${medicine.name}-${index}`} className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  <div>
+                    <p className="font-semibold text-slate-950">{medicine.name}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Qty {medicine.quantity} x {formatCurrency(medicine.price)} | Added by {medicine.addedBy || "Pharmacy"}
+                    </p>
+                  </div>
+                  <span className="font-semibold text-slate-950">{formatCurrency(medicine.total)}</span>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-500">
+                No medicine items added.
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="border-t border-slate-200 pt-6">

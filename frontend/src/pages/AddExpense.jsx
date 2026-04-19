@@ -38,6 +38,8 @@ function ChargeRow({ label, amount, detail }) {
 
 function AddExpense() {
   const { id } = useParams();
+  const role = localStorage.getItem("role");
+  const backPath = role === "reception" ? "/billing" : "/patients";
   const [bill, setBill] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -80,6 +82,8 @@ function AddExpense() {
     return groups;
   }, [bill]);
 
+  const medicineEntries = bill?.medicines || [];
+
   const handleAddExpense = async () => {
     if (!form.title.trim() || !form.amount) {
       alert("Please enter expense title and amount");
@@ -117,7 +121,7 @@ function AddExpense() {
     return (
       <div className="panel p-6">
         <h2 className="text-xl font-semibold text-slate-950">Bill not found</h2>
-        <Link to="/patients" className="mt-4 inline-flex text-sm font-semibold text-blue-600">
+        <Link to={backPath} className="mt-4 inline-flex text-sm font-semibold text-blue-600">
           Back to patients
         </Link>
       </div>
@@ -144,7 +148,7 @@ function AddExpense() {
             Open Invoice
           </Link>
           <Link
-            to="/patients"
+            to={backPath}
             className="inline-flex rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             Back to patients
@@ -288,6 +292,34 @@ function AddExpense() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="panel p-6">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-950">Pharmacy medicines</h3>
+            <p className="mt-1 text-sm text-slate-500">Medicine price and quantity entries added from the patient medicine log.</p>
+          </div>
+          <p className="text-lg font-bold text-slate-950">{formatCurrency(bill.manualTotals.medications)}</p>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          {medicineEntries.length > 0 ? (
+            [...medicineEntries].reverse().map((medicine, index) => (
+              <div key={`${medicine.date}-${medicine.name}-${index}`} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 px-4 py-3">
+                <div>
+                  <p className="font-semibold text-slate-950">{medicine.name}</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Qty {medicine.quantity} x {formatCurrency(medicine.price)} | Added by {medicine.addedBy || "Pharmacy"}
+                  </p>
+                </div>
+                <p className="font-semibold text-slate-950">{formatCurrency(medicine.total)}</p>
+              </div>
+            ))
+          ) : (
+            <p className="rounded-xl bg-slate-50 px-3 py-3 text-sm text-slate-500">No pharmacy medicine entries added.</p>
+          )}
         </div>
       </section>
 

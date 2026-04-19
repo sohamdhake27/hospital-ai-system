@@ -15,7 +15,7 @@ import {
   ResponsiveContainer
 } from "recharts";
 
-const SOCKET_URL = "https://hospital-ai-system-3uda.onrender.com";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5050";
 
 const emptyStats = {
   totalBeds: 0,
@@ -39,6 +39,8 @@ const emptyStats = {
 };
 
 function Dashboard() {
+  const role = localStorage.getItem("role");
+  const isAdmin = role === "admin";
   const [stats, setStats] = useState(null);
   const [isLive, setIsLive] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -197,6 +199,10 @@ function Dashboard() {
     { title: "High Risk", value: visibleStats.highRiskPatients, tone: "from-red-600 to-rose-500" }
   ];
 
+  const visibleMetricCards = isAdmin
+    ? metricCards
+    : metricCards.filter((item) => ["Admitted Patients", "Waiting Patients", "High Risk"].includes(item.title));
+
   if (loading) {
     return (
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -212,7 +218,9 @@ function Dashboard() {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Live Operations</p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950">Hospital Dashboard</h2>
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+            {isAdmin ? "Admin Dashboard" : "Doctor Dashboard"}
+          </h2>
         </div>
         <div className="panel flex items-center gap-3 px-4 py-3">
           <span className={`h-2.5 w-2.5 rounded-full ${isLive ? "bg-emerald-500" : "bg-amber-500"}`} />
@@ -222,11 +230,11 @@ function Dashboard() {
 
       <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <div className="panel overflow-hidden">
-          <div className="grid md:grid-cols-3">
-            {bedTableColumns.map((column, columnIndex) => (
+          <div className={`grid ${isAdmin ? "md:grid-cols-3" : "md:grid-cols-1"}`}>
+            {(isAdmin ? bedTableColumns : [bedTableColumns[1]]).map((column, columnIndex, columns) => (
               <div
                 key={column.heading}
-                className={columnIndex < bedTableColumns.length - 1 ? "border-b border-slate-200 md:border-b-0 md:border-r" : ""}
+                className={columnIndex < columns.length - 1 ? "border-b border-slate-200 md:border-b-0 md:border-r" : ""}
               >
                 <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 text-lg font-semibold text-slate-900 sm:text-xl">
                   {column.heading}
@@ -264,8 +272,8 @@ function Dashboard() {
         </div>
       </section>
 
-      <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-        {metricCards.map((item) => (
+      <section className={`grid gap-5 sm:grid-cols-2 ${isAdmin ? "xl:grid-cols-3" : "xl:grid-cols-3"}`}>
+        {visibleMetricCards.map((item) => (
           <div key={item.title} className={`rounded-3xl bg-gradient-to-br ${item.tone} p-5 text-white shadow-panel`}>
             <p className="text-sm text-white/75">{item.title}</p>
             <p className="mt-6 text-4xl font-semibold">{item.value}</p>
@@ -274,15 +282,17 @@ function Dashboard() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <ChartPanel title="Bed occupancy" eyebrow="Resource Usage">
-          <PieChart>
-            <Pie data={pieData} dataKey="value" cx="50%" cy="50%" outerRadius={100} label>
-              <Cell fill="#f43f5e" />
-              <Cell fill="#10b981" />
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ChartPanel>
+        {isAdmin && (
+          <ChartPanel title="Bed occupancy" eyebrow="Resource Usage">
+            <PieChart>
+              <Pie data={pieData} dataKey="value" cx="50%" cy="50%" outerRadius={100} label>
+                <Cell fill="#f43f5e" />
+                <Cell fill="#10b981" />
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ChartPanel>
+        )}
 
         <ChartPanel title="Patients per status" eyebrow="Throughput">
           <BarChart data={patientData}>
@@ -294,16 +304,18 @@ function Dashboard() {
           </BarChart>
         </ChartPanel>
 
-        <ChartPanel title="Beds by department" eyebrow="Capacity Mix">
-          <BarChart data={departmentData}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-            <XAxis dataKey="name" tickLine={false} axisLine={false} />
-            <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
-            <Tooltip />
-            <Bar dataKey="total" fill="#94a3b8" radius={[10, 10, 0, 0]} />
-            <Bar dataKey="occupied" fill="#0f172a" radius={[10, 10, 0, 0]} />
-          </BarChart>
-        </ChartPanel>
+        {isAdmin && (
+          <ChartPanel title="Beds by department" eyebrow="Capacity Mix">
+            <BarChart data={departmentData}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+              <XAxis dataKey="name" tickLine={false} axisLine={false} />
+              <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
+              <Tooltip />
+              <Bar dataKey="total" fill="#94a3b8" radius={[10, 10, 0, 0]} />
+              <Bar dataKey="occupied" fill="#0f172a" radius={[10, 10, 0, 0]} />
+            </BarChart>
+          </ChartPanel>
+        )}
 
         <ChartPanel title="Risk distribution" eyebrow="Clinical Risk">
           <PieChart>

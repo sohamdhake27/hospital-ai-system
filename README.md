@@ -1,92 +1,87 @@
-<h1 align="center">AI Hospital Patient Tracking System</h1>
+# AI Hospital Patient Tracking System
 
-<p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?color=36BCF7&lines=AI+Powered+Hospital+System;Full+Stack+MERN+Project;Real+Time+Dashboard;AI+Risk+Prediction" />
-</p>
+Full-stack hospital operations project with:
 
-## Live Demo
+- patient management
+- bed allocation
+- billing and invoice generation
+- AI risk prediction
+- realtime dashboard updates
 
-- Frontend: https://hospital-ai-system-olive.vercel.app
-- Backend API: https://hospital-ai-system-3uda.onrender.com
+## Localhost Setup
 
-## Overview
+This project now defaults to localhost for offline use.
 
-A full-stack AI-powered hospital management system designed to handle real-world hospital operations efficiently.
+### 1. Start MongoDB
 
-It integrates:
+Make sure MongoDB is running locally at:
 
-- Real-time patient tracking
-- Smart bed allocation
-- Billing system
-- AI-based risk prediction
+`mongodb://127.0.0.1:27017/hospitalDB`
 
-## Features
+If you want a different database URL, create `Backend/.env` from `Backend/.env.example`.
 
-- Bed allocation for ICU, General, and Emergency departments
-- Patient management dashboard
-- Expense and billing system
-- AI risk prediction for Low, Medium, and High risk levels
-- Auto bed reallocation
-- Real-time hospital overview
-
-## Advanced Features
-
-- Real-time updates using WebSockets and Socket.IO
-- Protected routes for authenticated hospital users
-- Role-based authentication for admin, doctor, and staff access
-- Live analytics for bed occupancy, patient status, departments, and risk levels
-- AI-assisted decision making with smart ICU recommendation for high-risk patients
-- Automatic bed seeding and smart bed allocation logic
-- Toast notifications and loading skeletons for a smoother clinical workflow
-
-## AI Risk Prediction
-
-The system includes a machine learning model that predicts patient risk levels:
-
-- High Risk
-- Medium Risk
-- Low Risk
-
-This helps hospitals prioritize critical patients and improve decision-making.
-
-## Tech Stack
-
-- Frontend: React.js, Vite, Recharts, Socket.IO Client
-- Backend: Node.js, Express.js, Socket.IO
-- Database: MongoDB
-- AI/ML: Python
-- Deployment: Vercel and Render
-
-## Screenshots
-
-### Dashboard
-![Dashboard](screenshots/dashboard.png)
-
-### Patients
-![Patients](screenshots/patients.png)
-
-### Billing
-![Billing](screenshots/billing.png)
-
-### Beds
-![Beds](screenshots/beds.png)
-
-### AI Prediction
-![Prediction](screenshots/prediction.png)
-
-## Demo Login
-
-Email: test123@gmail.com
-
-Password: 123456
-
-## Run Project
+### 2. Start the backend
 
 ```bash
+cd Backend
 npm install
-npm start
+npm run dev
 ```
 
-## Author
+Backend runs on:
 
-Soham Dhake
+`http://localhost:5000`
+
+On first startup it will automatically:
+
+- seed beds
+- create a demo user if it does not exist
+
+Demo login:
+
+- Email: `test123@gmail.com`
+- Password: `123456`
+
+### 3. Start the frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs on:
+
+`http://localhost:5173`
+
+The Vite dev server proxies `/api` and `/socket.io` to the local backend.
+
+### 4. Optional AI microservice
+
+Patient creation already has a fallback risk calculation, so the app works even if the Python AI service is not running.
+
+If you want the ML model running locally:
+
+```bash
+cd ai-model
+pip install -r requirements.txt
+python app.py
+```
+
+AI service runs on:
+
+`http://localhost:5001`
+
+## Environment Files
+
+Examples are included here:
+
+- `Backend/.env.example`
+- `frontend/.env.example`
+
+## Notes
+
+- Frontend API default: `/api`
+- Frontend socket default: `http://localhost:5000`
+- Backend MongoDB default: `mongodb://127.0.0.1:27017/hospitalDB`
+- Backend JWT secret has a local development fallback

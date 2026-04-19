@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import os
 import pickle
 
 app = Flask(__name__)
@@ -48,4 +49,5 @@ def predict():
         "recommendation": build_recommendation(risk)
     })
 
-app.run(port=5001)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5001")))

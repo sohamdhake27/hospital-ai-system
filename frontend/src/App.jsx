@@ -7,6 +7,8 @@ import Patients from "./pages/Patients";
 import Beds from "./pages/beds";
 import AIPrediction from "./pages/AIPrediction";
 import AddExpense from "./pages/AddExpense";
+import AdminDashboard from "./pages/AdminDashboard";
+import Pharmacy from "./pages/Pharmacy";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
@@ -26,7 +28,7 @@ function App() {
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "doctor"]}>
             <Layout>
               <Dashboard />
             </Layout>
@@ -38,7 +40,40 @@ function App() {
       <Route
         path="/patients"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "doctor", "reception", "pharmacy"]}>
+            <Layout>
+              <Patients />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <Layout>
+              <AdminDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/pharmacy"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "pharmacy"]}>
+            <Layout>
+              <Pharmacy />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/billing"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "reception"]}>
             <Layout>
               <Patients />
             </Layout>
@@ -49,7 +84,7 @@ function App() {
       <Route
         path="/patients/bill/:id"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "reception"]}>
             <Layout>
               <AddExpense />
             </Layout>
@@ -61,7 +96,7 @@ function App() {
       <Route
         path="/beds"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "doctor"]}>
             <Layout>
               <Beds />
             </Layout>
@@ -73,7 +108,7 @@ function App() {
       <Route
         path="/ai"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "doctor"]}>
             <Layout>
               <AIPrediction />
             </Layout>
@@ -83,8 +118,10 @@ function App() {
       <Route
         path="/bill/:id"
         element={
-          <ProtectedRoute>
-            <Bill />
+          <ProtectedRoute allowedRoles={["admin", "reception"]}>
+            <Layout>
+              <Bill />
+            </Layout>
           </ProtectedRoute>
         }
       />

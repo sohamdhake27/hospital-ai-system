@@ -1,14 +1,9 @@
 const express = require("express");
-const { protect, authorize } = require("../middleware/authMiddleware");
-const { getDashboard } = require("../controllers/dashboardController");
+const { protect, authorizeRoles } = require("../middleware/authMiddleware");
+const { getAnalytics } = require("../controllers/dashboardController");
 
 const router = express.Router();
 
-router.get(
-  "/",
-  protect,
-  authorize("admin", "doctor"),
-  getDashboard
-);
+router.get("/analytics", protect, authorizeRoles("admin"), getAnalytics);
 
 module.exports = router;
