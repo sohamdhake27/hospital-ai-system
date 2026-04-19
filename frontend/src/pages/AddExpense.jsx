@@ -136,12 +136,20 @@ function AddExpense() {
             Bed {patient.bedNumber} | {patient.department} | {bill.days} day{bill.days === 1 ? "" : "s"}
           </p>
         </div>
-        <Link
-          to="/patients"
-          className="inline-flex rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-        >
-          Back to patients
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            to={`/bill/${id}`}
+            className="inline-flex rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+          >
+            Open Invoice
+          </Link>
+          <Link
+            to="/patients"
+            className="inline-flex rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            Back to patients
+          </Link>
+        </div>
       </div>
 
       <section className="panel p-6">

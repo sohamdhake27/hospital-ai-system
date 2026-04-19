@@ -279,12 +279,20 @@ function Patients() {
                     )}
                   </td>
                   <td className="px-5 py-4">
-                    <Link
-                      to={`/patients/bill/${p._id}`}
-                      className="inline-flex rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
-                    >
-                      View Bill
-                    </Link>
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        to={`/patients/bill/${p._id}`}
+                        className="inline-flex rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                      >
+                        Bill
+                      </Link>
+                      <Link
+                        to={`/bill/${p._id}`}
+                        className="inline-flex rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
+                      >
+                        Invoice
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
