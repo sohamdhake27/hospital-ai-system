@@ -18,7 +18,6 @@ const app = express();
 const server = http.createServer(app);
 
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/hospitalDB";
 const PORT = Number(process.env.PORT) || 5050;
 const HOST = process.env.HOST || "0.0.0.0";
 
@@ -68,14 +67,14 @@ app.use("/auth", authRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/medicines", medicineRoutes);
 
-mongoose.connect(MONGO_URI)
+mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
-    console.log(`MongoDB connected: ${MONGO_URI}`);
+    console.log("MongoDB Connected ✅");
     await seedBeds();
     await seedDefaultUser();
   })
-  .catch((error) => {
-    console.error("MongoDB connection error:", error);
+  .catch((err) => {
+    console.log("DB Error ❌", err);
   });
 
 server.listen(PORT, HOST, () => {
