@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 const Bill = () => {
   const { id } = useParams();
@@ -18,8 +20,7 @@ const Bill = () => {
 
     fetchBill();
   }, [id]);
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+
 
 const downloadPDF = async () => {
   const input = document.getElementById("invoice");
