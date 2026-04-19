@@ -11,6 +11,7 @@ import AddExpense from "./pages/AddExpense";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import RiskPredictor from "./components/RiskPredictor";
+import Bill from "./pages/Bill";
 
 function App() {
   return (
@@ -79,6 +80,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/bill/:id" element={<Bill />} />
 
       {/* Risk Predictor */}
       <Route path="/predict" element={<RiskPredictor />} />

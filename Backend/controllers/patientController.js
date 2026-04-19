@@ -317,43 +317,34 @@ const getBill = async (req, res) => {
       else manualTotals.other += amount;
     });
 
-    const automaticTotal = Object.values(automaticCharges).reduce(
-      (sum, amount) => sum + amount,
-      0
-    );
-    const manualTotal = Object.values(manualTotals).reduce(
-      (sum, amount) => sum + amount,
-      0
-    );
-    const total = automaticTotal + manualTotal;
+    const automaticTotal = Object.values(automaticCharges).reduce((sum, value) => sum + value, 0);
+    const manualTotal = Object.values(manualTotals).reduce((sum, value) => sum + value, 0);
+    const subtotal = automaticTotal + manualTotal;
+    const GST_RATE = 0.18;
+    const gstAmount = +(subtotal * GST_RATE).toFixed(2);
+    const total = +(subtotal + gstAmount).toFixed(2);
 
     res.status(200).json({
-      patient: {
-        id: patient._id,
-        name: patient.name,
-        age: patient.age,
-        disease: patient.disease,
-        department,
-        status: patient.status,
-        bedNumber: patient.bedId?.bedNumber || patient.bedNumber || "-",
-        admissionDate: patient.admissionDate,
-        dischargeDate: patient.dischargeDate
-      },
+      patient,
       days,
       rates: {
         roomRate,
         doctorFeePerDay: BILL_RATES.doctorFeePerDay,
         nursingCarePerDay: BILL_RATES.nursingCarePerDay,
-        icuFeePerDay: department === "ICU" ? BILL_RATES.icuFeePerDay : 0,
-        emergencyFeePerDay:
-          department === "Emergency" ? BILL_RATES.emergencyFeePerDay : 0
+        icuFeePerDay: BILL_RATES.icuFeePerDay,
+        emergencyFeePerDay: BILL_RATES.emergencyFeePerDay
       },
       automaticCharges,
       manualTotals,
       expenses,
-      automaticTotal,
-      manualTotal,
-      total
+      summary: {
+        automaticTotal,
+        manualTotal,
+        subtotal,
+        gstRate: GST_RATE,
+        gstAmount,
+        total
+      }
     });
   } catch (error) {
     console.log("GET BILL ERROR:", error);
