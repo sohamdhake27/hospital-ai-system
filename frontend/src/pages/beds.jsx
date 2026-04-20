@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import API from "../api/api";
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5050";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || "https://hospital-ai-backend.onrender.com";
 
 function Beds() {
   const [beds, setBeds] = useState([]);

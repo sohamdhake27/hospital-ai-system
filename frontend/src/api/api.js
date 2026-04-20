@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const RAW_API_BASE_URL = import.meta.env.VITE_API_URL || "https://hospital-ai-backend.onrender.com";
+const API_BASE_URL = RAW_API_BASE_URL.replace(/\/+$/, "").replace(/\/api$/, "");
 
 export const API = axios.create({
   baseURL: `${API_BASE_URL}/api`

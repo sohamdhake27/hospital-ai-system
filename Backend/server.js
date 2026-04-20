@@ -18,8 +18,7 @@ const app = express();
 const server = http.createServer(app);
 
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";
-const PORT = Number(process.env.PORT) || 5050;
-const HOST = process.env.HOST || "0.0.0.0";
+const PORT = process.env.PORT || 5000;
 
 app.use(cors({
   origin: "*",
@@ -79,6 +78,6 @@ mongoose.connect(process.env.MONGO_URI)
     console.log("DB Error ❌", err);
   });
 
-server.listen(PORT, HOST, () => {
-  console.log(`Server running on http://${HOST === "0.0.0.0" ? "localhost" : HOST}:${PORT}`);
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
