@@ -25,13 +25,13 @@ const server = http.createServer(app); // ✅ SINGLE SERVER (IMPORTANT)
 const PORT = process.env.PORT || 5050;
 
 // ✅ CORS (FIXED + SAFE)
-app.use(cors({
-  origin: [
-  "http://localhost:5173",
-  "https://hospital-ai-system-woc3-n384quic0-sohamdhake27s-projects.vercel.app"
-],
+const cors = require('cors');
 
-  credentials: true
+app.use(cors({
+  origin: 'https://hospital-ai-system-psi.vercel.app',
+  credentials: true, // if you use cookies/auth headers
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.use(express.json());
