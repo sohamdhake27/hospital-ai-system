@@ -15,7 +15,7 @@ import {
   ResponsiveContainer
 } from "recharts";
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || "https://hospital-ai-backend.onrender.com";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || window.location.origin;
 
 const emptyStats = {
   totalBeds: 0,
