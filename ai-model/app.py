@@ -6,6 +6,10 @@ import pickle
 app = Flask(__name__)
 CORS(app)
 
+@app.route("/")
+def home():
+    return "AI Server Running 🚀"
+
 model, le_disease, le_risk = pickle.load(open("model.pkl", "rb"))
 
 
