@@ -1,27 +1,17 @@
-const predictRisk = (req, res) => {
-  const { age, severity, disease } = req.body;
+const axios = require("axios");
 
-  let risk = "Low";
+exports.getPrediction = async (req, res) => {
+  try {
+    const { age, disease } = req.body;
 
-  if (age > 60 || severity > 7) {
-    risk = "High";
-  } else if (age > 40 || severity > 4) {
-    risk = "Medium";
+    const response = await axios.post(
+      `${process.env.AI_URL}/predict`,
+      { age, disease }
+    );
+
+    res.json(response.data);
+  } catch (err) {
+    console.log("AI ERROR:", err.message);
+    res.status(500).json({ error: "AI failed" });
   }
-
-  if (disease.toLowerCase().includes("heart")) {
-    risk = "High";
-  }
-
-  res.json({
-    risk,
-    recommendation:
-      risk === "High"
-        ? "ICU Required"
-        : risk === "Medium"
-        ? "Regular Monitoring"
-        : "Normal Care"
-  });
 };
-
-module.exports = { predictRisk };

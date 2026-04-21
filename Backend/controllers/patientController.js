@@ -31,7 +31,7 @@ const createPatient = async (req, res) => {
 
     try {
       const aiResponse = await axios.post(
-        "http://localhost:5001/predict",
+        `${process.env.AI_URL}/predict`,
         { age, disease }
       );
 
