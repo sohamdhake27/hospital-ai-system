@@ -8,7 +8,9 @@
   <img src="https://img.shields.io/badge/Deployed-Yes-success?style=for-the-badge"/>
 </p>
 
-
+<p align="center">
+  <img src="https://readme-typing-svg.herokuapp.com?size=28&duration=3000&color=0E76A8&center=true&vCenter=true&width=800&lines=Hospital+AI+Management+System;Full+Stack+%2B+AI+Project;Real-Time+Hospital+Workflow;Deployed+on+Cloud"/>
+</p>
   
 <p align="center">
   ⚡ AI-powered Hospital Management System with Smart Billing, Bed Tracking & Role-Based Access
